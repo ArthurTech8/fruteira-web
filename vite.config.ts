@@ -11,6 +11,16 @@ export default defineConfig({
       '/api': {
         target: 'http://localhost:5022',
         changeOrigin: true,
+        // Sem isso o Vite responde 500 quando a API está fora do ar, e o front
+        // confunde com um erro da própria API. 502 = API inalcançável.
+        configure: (proxy) => {
+          proxy.on('error', (_err, _req, res) => {
+            if ('writeHead' in res && !res.headersSent) {
+              res.writeHead(502)
+              res.end()
+            }
+          })
+        },
       },
     },
   },
